@@ -219,9 +219,9 @@ class Base extends Controller
      * @return bool
      * date:2018-10-12 15:39
      */
-    protected function writeJsonSelf(array $data){
+    protected function writeJsonSelf($data){
         if(!$this->response()->isEndResponse()){
-            $this->response()->write(json_encode($data,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+            $this->response()->write($data);
             $this->response()->withHeader('Content-type','application/json;charset=utf-8');
             $this->response()->withStatus(200);
             $this->response()->end();

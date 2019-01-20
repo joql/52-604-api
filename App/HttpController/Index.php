@@ -30,7 +30,8 @@ class Index extends Base
         $this->redis->auth($conf['auth']);
         $this->redis->setOption(\Redis::OPT_PREFIX,'soft_');
         if($redis_result!=true){
-            die('redis连接失败');
+            $this->writeJsonSelf('cc');
+            return false;
         }
         return true;
     }
@@ -56,7 +57,7 @@ class Index extends Base
         ]);
 
         if(!$validate->check($this->request()->getRequestParam())){
-            $this->response()->write('cc');
+            $this->writeJsonSelf('cc');
             return false;
         }
         $id = $this->request()->getRequestParam('id');
@@ -66,19 +67,19 @@ class Index extends Base
             'time',
             'qq',
         ))){
-            $this->response()->write('cc');
+            $this->writeJsonSelf('cc');
             return false;
         }
         $r = $this->redis->get('data_'.$id.'-'.$name);
         if(!empty($r)){
-            $this->response()->write($r);
+            $this->writeJsonSelf($r);
             return true;
 
         }
 
         //mysql池获取对象
         if(!$this->initDb()){
-            $this->response()->write('cc');
+            $this->writeJsonSelf('cc');
             return;
         }
 
@@ -86,10 +87,10 @@ class Index extends Base
         $r = $this->_db->where('id',$id)->getValue('soft_data',$name);
 
         if(empty($r)){
-            $this->response()->write('cc');
+            $this->writeJsonSelf('cc');
         }else{
             $this->redis->set('data_'.$id.'-'.$name,$r,5);
-            $this->response()->write($r);
+            $this->writeJsonSelf($r);
         }
         return;
     }
@@ -102,7 +103,7 @@ class Index extends Base
         ]);
 
         if(!$validate->check($this->request()->getRequestParam())){
-            $this->response()->write('cc');
+            $this->writeJsonSelf('cc');
             return false;
         }
         $id = $this->request()->getRequestParam('id');
@@ -111,13 +112,13 @@ class Index extends Base
             'name',
             'pwd',
         ))){
-            $this->response()->write('cc');
+            $this->writeJsonSelf('cc');
             return false;
         }
 
         $r = $this->redis->get('wb'.$id.'-'.$name);
         if(!empty($r)){
-            $this->response()->write($r);
+            $this->writeJsonSelf($r);
             return true;
 
         }
@@ -125,30 +126,25 @@ class Index extends Base
         if(!$this->initDb()){
             return;
         }
-
         $r = $this->_db->where('id',$id)->getValue('soft_wb',$name);
         if(empty($r)){
             $this->redis->set('wb_'.$id.'-'.$name,$r,5);
-            $this->response()->write('cc');
+            $this->writeJsonSelf('cc');
         }else{
-            $this->response()->write($r);
+            $this->writeJsonSelf($r);
         }
         return;
     }
 
     public function state(){
-        if($this->initRedis()){
-            $this->response()->write('cc');
-            return;
-        }
 
-        $r = $this->_redis->exec('get', 'state');
+        $r = $this->redis->get('state');
         if(empty($r)){
-            $this->response()->write(-1);
+            $this->writeJsonSelf(-1);
             return;
         }else{
-            $this->_redis->exec('set', 'state', 0);
-            $this->response()->write($r);
+            $this->_redis->set('state', 0);
+            $this->writeJsonSelf($r);
             return;
         }
     }
