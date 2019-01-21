@@ -143,7 +143,7 @@ class Index extends Base
             $this->writeJsonSelf(-1);
             return;
         }else{
-            $this->_redis->set('state', 0);
+            $this->redis->set('state', 0);
             $this->writeJsonSelf($r);
             return;
         }
